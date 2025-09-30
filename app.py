@@ -1,3 +1,5 @@
+from idlelib.configdialog import is_int
+
 from flask import Flask, render_template, request
 #from flask_sqlalchemy import SQLAlchemy
 import os
@@ -26,26 +28,23 @@ def add_author():
    if request.method == "POST":
       # Gets parameters from the form
       name = request.form.get('name', '').strip()
-      birth_date = request.form.get('birth_year', '').strip()
-      date_of_death = request.form.get('death_year', '').strip()
+      birth_date = request.form.get('birth_date', '').strip()
+      date_of_death = request.form.get('date_of_death', '').strip()
 
-      # Validates the name field: only alphabetic characters and spaces accepted
-      if not name or not name.replace(' ', '').isalpha():
-         warning_message = "Invalid name. Please try again!"
+      # Validates the name field: only non-integer string accepted
+      if not name or is_int(name):
+         warning_message = "Invalid name. Please fill the form correctly."
          return render_template("add_author.html", warning_message=warning_message)
 
       # Checks if the author already in db
-      existing_author = Author.query.filter_by(name=name).first()
+      existing_author = Author.query.filter_by(name=name, birth_date=birth_date).first()
+      print(existing_author)
       if existing_author:
-         warning_message = "Author already in database..."
+         warning_message = "Author already in database... Please choose a different name."
          return render_template("add_author.html", warning_message=warning_message)
 
       # Author object creation
-      author = Author(
-         name=name,
-         birth_date=birth_date,
-         date_of_death=date_of_death
-      )
+      author = Author(name=name, birth_date=birth_date, date_of_death=date_of_death)
 
       try:
          db.session.add(author)
@@ -56,10 +55,10 @@ def add_author():
          db.session.rollback()
          warning_message = f"Error adding author to the database!"
          return render_template("add_author.html", warning_message=warning_message)
+
    # GET method handling
    else:
-      return render_template('add_author.html')
-
+      return render_template('add_author.html',authors=Author.query.all())
 
 
 
