@@ -2,20 +2,21 @@ from flask import Flask, render_template, request
 #from flask_sqlalchemy import SQLAlchemy
 import os
 from data_models import db, Author, Book
-from datetime import datetime
+#from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-
 app = Flask(__name__)
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(basedir, 'data/library.sqlite')}"
+
 db.init_app(app)
 
 # Create the database tables. Ran once and then commented
 # with app.app_context():
 #    db.create_all()
 
-@app.route('/add_author', methods=['POST', 'GET'])
+@app.route('/add_author', methods=['GET', 'POST'])
 def add_author():
    """
    Handles the addition of a new author. Both GET and POST requests accepted.
@@ -61,3 +62,7 @@ def add_author():
 
 
 
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080, debug=True)

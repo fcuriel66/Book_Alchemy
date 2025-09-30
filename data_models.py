@@ -44,9 +44,7 @@ class Book(db.Model):
           title (str): Title of the book.
           publication_year (int): Year the book was published.
           author_id (int): Foreign key referencing the Author of the book.
-          cover_url (str): URL of the book cover image.
-          description (str): Description of the book.
-      """
+    """
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     isbn = db.Column(db.String, unique=True, nullable=False)
