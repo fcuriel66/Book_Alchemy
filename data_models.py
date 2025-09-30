@@ -51,9 +51,6 @@ class Book(db.Model):
     title = db.Column(db.String, nullable=False)
     publication_year = db.Column(db.Integer, nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), nullable=False)
-    # cover_url = db.Column(db.String, nullable=True)
-    # description = db.Column(db.String, nullable=True)
-    # author = db.relationship('Author', backref='books', lazy=True)
 
     def __repr__(self):
         """

@@ -1,5 +1,5 @@
 from idlelib.configdialog import is_int
-
+from datetime import datetime
 from flask import Flask, render_template, request
 #from flask_sqlalchemy import SQLAlchemy
 import os
@@ -61,6 +61,74 @@ def add_author():
       return render_template('add_author.html',authors=Author.query.all())
 
 
+@app.route('/add_book', methods=['GET', 'POST'])
+def add_book():
+   """
+   Handles the addition of a new book. Both GET and POST requests accepted.
+       - GET: Renders the form for adding a new book.
+       - POST: Processes the form submission, validates the input, and adds the book to the database.
+   """
+   if request.method == "POST":
+      isbn = request.form.get('isbn', '').strip()
+      title = request.form.get('title', '').strip()
+      publication_year = request.form.get('publication_year', '').strip()
+      author_id = request.form.get('author_id')
+
+      # Title validation: it must not be empty and should contain letters
+      if not title or not any(char.isalpha() for char in title):
+         warning_message = "Invalid book title. Please enter a valid book title."
+         return render_template("add_book.html",
+                                authors=Author.query.all(),
+                                warning_message=warning_message)
+
+      # ISBN validation: It should contain only digits and be 10 or 13 digits long
+      if not isbn.isdigit() or len(isbn) not in [10, 13]:
+         warning_message = "Invalid ISBN. It should be 10 or 13 digits."
+         return render_template("add_book.html",
+                                authors=Author.query.all(),
+                                warning_message=warning_message)
+
+      # Validate publication year: It should be a valid year
+      current_year = datetime.now().year
+      if publication_year:
+         if not publication_year.isdigit() or not (1455 <= int(publication_year) <= current_year):
+            warning_message = (f"Invalid publication year. Must be between 1455"
+                               f" (first published book) and {current_year}.")
+            return render_template("add_book.html",
+                                   authors=Author.query.all(),
+                                   warning_message=warning_message)
+
+      # Check if the book already exists
+      existing_book = Book.query.filter_by(isbn=isbn).first()
+      if existing_book:
+         warning_message = "Book already exists in the library collection"
+         return render_template("add_book.html",
+                                authors=Author.query.all(),
+                                warning_message=warning_message)
+
+      book = Book(
+         author_id=author_id,
+         isbn=isbn,
+         title=title,
+         publication_year=int(publication_year) if publication_year else None
+      )
+
+      try:
+         db.session.add(book)
+         db.session.commit()
+         success_message = "Book added successfully!"
+         return render_template("add_book.html",
+                                authors=Author.query.all(),
+                                success_message=success_message)
+      except SQLAlchemyError:
+         db.session.rollback()
+         warning_message = f"Error adding the book!"
+         return render_template("add_book.html",
+                                authors=Author.query.all(),
+                                warning_message=warning_message)
+
+   else:
+      return render_template("add_book.html", authors=Author.query.all())
 
 
 if __name__ == "__main__":
