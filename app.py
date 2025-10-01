@@ -1,8 +1,8 @@
 from idlelib.configdialog import is_int
 from datetime import datetime
 from flask import Flask, render_template, request
-#from flask_sqlalchemy import SQLAlchemy
 import os
+import requests
 from data_models import db, Author, Book
 #from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,6 +17,57 @@ db.init_app(app)
 # Create the database tables. Ran once and then commented
 # with app.app_context():
 #    db.create_all()
+
+def fetch_book_api(isbn):
+   """
+   Fetches book details, including the cover image URL and description, using the Google Books API.
+   Args:
+       isbn (str): The ISBN of the book to fetch details for.
+   Returns:
+       string: Containing cover_url (str or None) which is the
+        URL of the book's cover image if available, otherwise None.
+   """
+   if not isbn or not isbn.isdigit() or len(isbn) not in (10, 13):
+      print(f"Invalid ISBN provided: {isbn}")
+      return None
+
+   api_url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}"
+
+   try:
+      response = requests.get(api_url, timeout=25)
+      response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+   except requests.exceptions.Timeout:
+      print(f"Request timed out while fetching details for ISBN: {isbn}")
+      return None
+   except requests.exceptions.ConnectionError:
+      print(f"Connection error while fetching details for ISBN: {isbn}")
+      return None
+   except requests.exceptions.HTTPError as e:
+      print(f"HTTP error occurred: {e}")
+      return None
+   except requests.exceptions.RequestException as e:
+      print(f"An error occurred while fetching details for ISBN: {isbn}. Error: {e}")
+      return None
+
+   try:
+      data = response.json()
+   except ValueError:
+      print(f"Error in JSON response for ISBN: {isbn}")
+      return None
+
+   if "items" not in data or not data["items"]:
+      print(f"No book found for ISBN: {isbn}")
+      return None
+
+   try:
+      volume_info = data["items"][0]["volumeInfo"]
+      cover_url = volume_info.get("imageLinks", {}).get("thumbnail", None)
+      #description = volume_info.get("description", None)
+      return cover_url, #description
+   except KeyError:
+      print(f"Unexpected data structure in API response for ISBN: {isbn}")
+      return None
+
 
 @app.route('/add_author', methods=['GET', 'POST'])
 def add_author():
@@ -73,6 +124,7 @@ def add_book():
       title = request.form.get('title', '').strip()
       publication_year = request.form.get('publication_year', '').strip()
       author_id = request.form.get('author_id')
+      cover_url = request.form.get('cover_url', '').strip()
 
       # Title validation: it must not be empty and should contain letters
       if not title or not any(char.isalpha() for char in title):
@@ -110,7 +162,8 @@ def add_book():
          author_id=author_id,
          isbn=isbn,
          title=title,
-         publication_year=int(publication_year) if publication_year else None
+         publication_year=int(publication_year) if publication_year else None,
+         cover_url=cover_url
       )
 
       try:
@@ -130,6 +183,43 @@ def add_book():
    else:
       return render_template("add_book.html", authors=Author.query.all())
 
+
+@app.route('/', methods=['GET'])
+def home_page():
+   """
+       Displays a homepage with the books in the database listed.
+       The books can be sorted by author or title. A search function
+        can filter books by title.
+       Returns:
+           - Rendered homepage with books, sorted and/or filtered based on the user's input.
+       """
+   sort = request.args.get('sort', 'author')
+   search = request.args.get('search') or ""
+   message = request.args.get('message')
+
+   if search:
+      books = db.session.query(Book, Author).join(Author) \
+         .filter(Book.title.like(f"%{search}%")) \
+         .order_by(Book.title).all()
+      if not books:
+         return render_template("home.html", books=[], search=search,
+                                message="No books in database matched your search.")
+   else:
+      if sort == 'author':
+         books = db.session.query(Book, Author).join(Author).order_by(Author.name).all()
+      elif sort == 'title':
+         books = db.session.query(Book, Author).join(Author).order_by(Book.title).all()
+      else:
+         books = db.session.query(Book, Author).join(Author).order_by(Author.name).all()
+
+   books_with_cover = []
+   for book, author in books:
+      #cover_url, _ = fetch_book_api(book.isbn)
+      cover_url = fetch_book_api(book.isbn)
+      books_with_cover.append((book, author, cover_url))
+
+   return render_template("home.html", books=books_with_cover,
+                          sort=sort, search=search, message=message)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
