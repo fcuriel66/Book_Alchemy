@@ -17,12 +17,19 @@ The app uses a JSON-backed data store and includes basic pages and API endpoints
 ## Repo structure
 
 Book_Alchemy/
+
 ├── app.py # Main Flask application (routes + logic)
+
 ├── data_models.py # Data model helpers (load/save, helpers)
+
 ├── data/ # JSON data files (e.g. books.json)
+
 ├── templates/ # Jinja2 templates (index.html, add.html, update.html, ...)
-├── static/ # CSS/JS assets (style.css, etc.)
+
+├── static/ # CSS (style.css, etc.)
+
 ├── requirements.txt # Python dependencies
+
 └── README.md
 
 ---
