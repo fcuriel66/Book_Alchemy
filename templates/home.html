@@ -11,12 +11,12 @@
     <header>
       <div class="header-container">
         <a href="{{ url_for('home_page') }}" class="library-title">
-            <h1>Fernando's Book Library 📚🧪🔭</h1>
+            <h1>Fernando's Books 📚🧪🔭</h1>
         </a>
         <div class="header-right">
           <a href="{{ url_for('add_book') }}" class="add-button">Add a book</a>
           <a href="{{ url_for('add_author') }}" class="add-button">Add an author</a>
-          <!-- Sort Dropdown -->
+          <!-- Sort dropdown menu -->
           <form method="GET" action="{{ url_for('home_page') }}">
             <select name="sort" class="sort-dropdown" onchange="this.form.submit()">
               <option value="author" {{ 'selected' if sort == 'author' else '' }}>Sort by Author</option>
@@ -59,6 +59,13 @@
             <p>{{ book.title }}</p>
           </h3>
 
+          <form
+            action="{{ url_for('delete_book', book_id=book.id) }}"
+            method="POST"
+            class="delete-form"
+          >
+            <button type="submit">Delete</button>
+          </form>
 
         </div>
         {% endfor %}
@@ -80,7 +87,13 @@
                 />
                 <p>{{ author.name }}</p>
                 <h3><p>{{ book.title }}</p></h3>
-
+                <form
+                    action="{{ url_for('delete_book', book_id=book.id) }}"
+                    method="POST"
+                    class="delete-form"
+                  >
+                    <button type="submit">Delete</button>
+                </form>
             </div>
             {% endfor %}
         </div>
