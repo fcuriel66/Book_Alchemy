@@ -4,7 +4,6 @@ from flask import Flask, render_template, request
 import os
 import requests
 from data_models import db, Author, Book
-#from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 
 app = Flask(__name__)
@@ -30,7 +29,7 @@ def fetch_book_api(isbn):
    if not isbn or not isbn.isdigit() or len(isbn) not in (10, 13):
       print(f"Invalid ISBN provided: {isbn}")
       return None
-
+   # API URL query to get book info through its ISBN
    api_url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}"
 
    try:
@@ -62,8 +61,6 @@ def fetch_book_api(isbn):
    try:
       volume_info = data["items"][0]["volumeInfo"]
       cover_url = volume_info.get("imageLinks", {}).get("thumbnail", None)
-      #print(cover_url)
-      #description = volume_info.get("description", None)
       return cover_url
    except KeyError:
       print(f"Unexpected data structure in API response for ISBN: {isbn}")
@@ -125,7 +122,6 @@ def add_book():
       title = request.form.get('title', '').strip()
       publication_year = request.form.get('publication_year', '').strip()
       author_id = request.form.get('author_id')
-      #cover_url = request.form.get('cover_url', '').strip()
       cover_url = fetch_book_api(isbn)
 
       # Title validation: it must not be empty and should contain letters
@@ -159,7 +155,7 @@ def add_book():
          return render_template("add_book.html",
                                 authors=Author.query.all(),
                                 warning_message=warning_message)
-
+      # Creation of book instance, including cover_url
       book = Book(
          author_id=author_id,
          isbn=isbn,
@@ -167,7 +163,7 @@ def add_book():
          publication_year=int(publication_year) if publication_year else None,
          cover_url=cover_url
       )
-      #print(book)
+
       try:
          db.session.add(book)
          db.session.commit()
@@ -193,7 +189,7 @@ def home_page():
        The books can be sorted by author or title. A search function
         can filter books by title.
        Returns:
-           - Rendered homepage with books, sorted and/or filtered based on the user's input.
+            Rendered homepage with books, sorted and/or filtered based on the user's input.
        """
    sort = request.args.get('sort', 'author')
    search = request.args.get('search') or ""
@@ -214,13 +210,12 @@ def home_page():
       else:
          books = db.session.query(Book, Author).join(Author).order_by(Author.name).all()
 
-   books_with_cover = []
+   books_and_cover = []
    for book, author in books:
-      #cover_url, _ = fetch_book_api(book.isbn)
       cover_url = fetch_book_api(book.isbn)
-      books_with_cover.append((book, author, cover_url))
+      books_and_cover.append((book, author, cover_url))
 
-   return render_template("home.html", books=books_with_cover,
+   return render_template("home.html", books=books_and_cover,
                           sort=sort, search=search, message=message)
 
 if __name__ == "__main__":

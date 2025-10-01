@@ -4,13 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Home - Book Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <body>
+    <header>
+      <div class="header-container">
+        <a href="{{ url_for('home_page') }}" class="library-title">
+            <h1>Fernando's Book Library 📚🧪🔭</h1>
+        </a>
+        <div class="header-right">
+          <a href="{{ url_for('add_book') }}" class="add-button">Add a book</a>
+          <a href="{{ url_for('add_author') }}" class="add-button">Add an author</a>
+          <!-- Sort Dropdown -->
+          <form method="GET" action="{{ url_for('home_page') }}">
+            <select name="sort" class="sort-dropdown" onchange="this.form.submit()">
+              <option value="author" {{ 'selected' if sort == 'author' else '' }}>Sort by Author</option>
+              <option value="title" {{ 'selected' if sort == 'title' else '' }}>Sort by Title</option>
+            </select>
+            <input type="hidden" name="search" value="{{ search | default('') }}">
+          </form>
+        </div>
+      </div>
+    </header>
 
-    {% for book in books %}
-    <div> <h3>{{ book.title }}</h3>
+    <!-- Search form -->
+    <section class="search-section">
+      <form method="GET" class="search-sort-form">
+        <div class="input-group">
+          <input
+            id="search"
+            name="search"
+            type="text"
+            value="{{ search | default('') }}"
+            placeholder="Search for books..."
+          />
+          <button type="submit" class="search-button">Search</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Search results section -->
+    {% if search %}
+    <section class="search-result-container">
+        {% for book, author, cover in books %}
+        <div class="book-card">
+          <img
+            src="{{ cover or 'https://via.placeholder.com/150x200?text=No+Cover' }}"
+            alt="{{ book.title }} cover"
+            class="book-cover"
+          />
+          <p>{{ author.name }}</p>
+          <h3>
+            <p>{{ book.title }}</p>
+          </h3>
+
+
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- Book Grid (for displaying all books) -->
+{% if not search %}
+<main>
+    <div class="scroll-container">
+        <button class="scroll-button left">&#10094;</button>
+        <div class="book-grid">
+            {% for book, author, cover in books %}
+            <div class="book-card">
+                <img
+                    src="{{ cover or 'https://via.placeholder.com/150x200?text=No+Cover' }}"
+                    alt="{{ book.title }} cover"
+                    class="book-cover"
+                />
+                <p>{{ author.name }}</p>
+                <h3><p>{{ book.title }}</p></h3>
+
+            </div>
+            {% endfor %}
+        </div>
+        <button class="scroll-button right">&#10095;</button>
     </div>
-    {% endfor %}
+</main>
+{% endif %}
+
+    <footer>
+      <p>🌍💻 {{ current_year }} Fernando'soft</p>
+    </footer>
 
   </body>
 </html>
