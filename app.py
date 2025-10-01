@@ -191,6 +191,7 @@ def home_page():
        Returns:
             Rendered homepage with books, sorted and/or filtered based on the user's input.
        """
+
    sort = request.args.get('sort', 'author')
    search = request.args.get('search') or ""
    message = request.args.get('message')
