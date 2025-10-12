@@ -1,7 +1,7 @@
 # Book_Alchemy
 
-Simple Flask web app for managing a small book/catalog collection.  
-The app uses a JSON-backed data store and includes basic pages and API endpoints for listing, adding, updating, deleting and searching books. Frontend templates are provided under `templates/` and static assets under `static/`.
+Flask-based Web App for managing a book/catalog collection.  
+The app uses a JSON-backed data store and includes pages and API endpoints for listing, adding, updating, deleting and searching for books. As long as a book has a ISBN, the app can search for it and include its inofrmation and its front cover in the generated website. Frontend Jinja2 templates are provided under `templates/` and static assets like and CSS styles are under `static/`.
 
 ---
 
@@ -17,21 +17,15 @@ The app uses a JSON-backed data store and includes basic pages and API endpoints
 ## Repo structure
 
 Book_Alchemy/
-
+```
 ├── app.py # Main Flask application (routes + logic)
-
 ├── data_models.py # Data model helpers (load/save, helpers)
-
 ├── data/ # JSON data files (e.g. books.json)
-
 ├── templates/ # Jinja2 templates (index.html, add.html, update.html, ...)
-
 ├── static/ # CSS (style.css, etc.)
-
 ├── requirements.txt # Python dependencies
-
 └── README.md
-
+```
 ---
 
 ## Features
