@@ -33,6 +33,9 @@ Book_Alchemy/
 
 ## Features
 
+- Carrousel-like browsing of movies
+- Single or multiple user accounts
+- Personalized movies for each user
 - List all books (web page + API)
 - Add new book (form + API)
 - Edit existing book (form)
