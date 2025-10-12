@@ -1,4 +1,4 @@
-# Book_Alchemy
+# Book Oracle
 
 Flask-based Web App for managing a book/catalog collection.  
 The app uses a JSON-backed data store and includes pages and API endpoints for listing, adding, updating, deleting and searching for books. As long as a book has a ISBN, the app can search for it and include its inofrmation and its front cover in the generated website. Frontend Jinja2 templates are provided under `templates/` and static assets like and CSS styles are under `static/`.
